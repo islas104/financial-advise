@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# financial-advise
 
-## Getting Started
+Beginner-friendly web app that turns your risk profile and goals into a simple,
+S&P 500-based starter portfolio — inspired by how eToro and Trading 212 make
+investing approachable.
 
-First, run the development server:
+> ⚠️ **Educational only — not financial advice.** This app produces illustrative,
+> general-information portfolios for learning purposes. It is **not** a personal
+> recommendation and is **not** provided by an FCA-authorised firm. Always do your
+> own research and consider speaking to a regulated financial adviser before
+> investing. Investing carries risk; you may get back less than you put in.
+
+## What it does
+
+1. You answer a few short questions (time horizon, risk comfort, goal).
+2. The app maps your answers to a simple allocation built around an S&P 500 index
+   core, plus a few illustrative large-cap holdings.
+3. You get a clear, explained breakdown you can take away and research yourself.
+
+## Tech stack
+
+- **Next.js (App Router)** + TypeScript
+- **Tailwind CSS**
+- Market data via a pluggable provider adapter (free-tier API; key added later)
+- Hero visual generated with [Higgsfield](https://higgsfield.ai)
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local` and add your market-data API key.
 
-## Learn More
+## Status
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Early development. Data layer currently runs on seeded S&P 500 reference data and
+swaps to a live API through a single adapter.
