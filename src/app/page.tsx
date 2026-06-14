@@ -58,10 +58,10 @@ export default function Home() {
           <div className="relative">
             <div className="absolute -inset-4 -z-10 rounded-[28px] bg-emerald/10 blur-2xl" aria-hidden />
             <Image
-              src="/hero.png"
+              src="/hero.webp"
               alt="Abstract illustration of a steadily rising market in emerald and gold"
-              width={2336}
-              height={1744}
+              width={1600}
+              height={1195}
               priority
               sizes="(max-width: 768px) 90vw, 560px"
               className="rounded-[22px] border border-line shadow-[var(--shadow-lg)]"

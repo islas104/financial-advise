@@ -56,7 +56,10 @@ function ruleForScore(score: number): BandRule {
  * large-cap picks supplied by the caller.
  */
 function buildSlices(rule: BandRule, picks: readonly { ticker: string; name: string }[]): AllocationSlice[] {
-  const singleStockTotal = Math.round(rule.equity * rule.singleStockShare);
+  // Only carve out a single-stock sleeve when we actually have picks; otherwise
+  // the whole equity allocation stays in the index core so slices still sum to 100.
+  const useSingleStocks = rule.singleStockShare > 0 && picks.length > 0;
+  const singleStockTotal = useSingleStocks ? Math.round(rule.equity * rule.singleStockShare) : 0;
   const indexEquity = rule.equity - singleStockTotal;
 
   const slices: AllocationSlice[] = [
