@@ -13,6 +13,12 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
+  {
+    rules: {
+      // Project rule: treat missing effect deps as an error for new code.
+      "react-hooks/exhaustive-deps": "error",
+    },
+  },
 ]);
 
 export default eslintConfig;

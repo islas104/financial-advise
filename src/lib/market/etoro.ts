@@ -1,10 +1,13 @@
+import "server-only";
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import type { Constituent, MarketDataProvider, Quote } from "./types";
 import { SEED_CONSTITUENTS, SEED_QUOTES } from "./seed-data";
 
 // eToro public API. REST base + the live rates endpoint discovered from the spec.
 const BASE = "https://public-api.etoro.com/api/v1";
 const RATES_PATH = "/market-data/instruments/rates";
+const REQUEST_TIMEOUT_MS = 8000;
 
 // Static ticker -> eToro instrument ID map, resolved once from the instrument
 // catalog. Keeping it static avoids shipping the ~12MB catalog fetch at runtime.
@@ -23,12 +26,18 @@ const TICKER_TO_ID: Readonly<Record<string, number>> = {
   BND: 4271,
 };
 
-interface EtoroRate {
-  instrumentID: number;
-  ask: number;
-  bid: number;
-  date: string;
-}
+const etoroRateSchema = z.object({
+  instrumentID: z.number(),
+  ask: z.number().positive(),
+  bid: z.number().positive(),
+  date: z.string(),
+});
+
+const etoroRatesResponseSchema = z.object({
+  rates: z.array(etoroRateSchema).default([]),
+});
+
+type EtoroRate = z.infer<typeof etoroRateSchema>;
 
 export interface EtoroCredentials {
   readonly apiKey: string;
@@ -100,15 +109,24 @@ export class EtoroMarketProvider implements MarketDataProvider {
       },
       // Live quotes — never cache at the fetch layer.
       cache: "no-store",
+      // Fail fast if eToro hangs rather than holding the function open.
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
 
     if (!res.ok) {
-      throw new Error(`eToro rates request failed: HTTP ${res.status}`);
+      throw new Error(`eToro rates request failed: HTTP ${res.status} ${res.statusText}`);
     }
 
-    const body: { rates?: EtoroRate[] } = await res.json();
+    const parsed = etoroRatesResponseSchema.safeParse(await res.json());
+    if (!parsed.success) {
+      throw new Error("eToro rates response had an unexpected shape");
+    }
+    if (parsed.data.rates.length === 0) {
+      console.warn("[market/etoro] rates response was empty — check instrument IDs and access.");
+    }
+
     const map = new Map<string, EtoroRate>();
-    for (const rate of body.rates ?? []) {
+    for (const rate of parsed.data.rates) {
       const ticker = idToTicker.get(rate.instrumentID);
       if (ticker) map.set(ticker, rate);
     }

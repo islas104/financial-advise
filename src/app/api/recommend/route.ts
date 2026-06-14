@@ -23,12 +23,14 @@ async function buildSnapshot(
   provider: MarketDataProvider,
   tickers: readonly string[],
 ): Promise<MarketSnapshot> {
-  const prices: Record<string, number> = {};
-  await Promise.all(
+  const entries = await Promise.all(
     tickers.map(async (ticker) => {
       const quote = await provider.getQuote(ticker);
-      if (quote) prices[ticker] = quote.price;
+      return quote ? ([ticker, quote.price] as const) : null;
     }),
+  );
+  const prices = Object.fromEntries(
+    entries.filter((entry): entry is readonly [string, number] => entry !== null),
   );
 
   const live = isLiveProvider();
@@ -64,7 +66,9 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<R
     const market = await buildSnapshot(provider, tickers);
 
     return NextResponse.json({ success: true, data: { recommendation, market } });
-  } catch {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("[api/recommend] failed to build portfolio:", message);
     return NextResponse.json(
       { success: false, error: "Could not build a portfolio right now. Please try again." },
       { status: 500 },
