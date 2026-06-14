@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { recommendPortfolio } from "@/lib/portfolio/recommend";
-import { getMarketDataProvider, topPicks } from "@/lib/market/provider";
-import type { PortfolioRecommendation } from "@/lib/portfolio/types";
+import { getMarketDataProvider, isLiveProvider, topPicks } from "@/lib/market/provider";
+import type { MarketSnapshot, RecommendResult } from "@/lib/portfolio/types";
+import type { MarketDataProvider } from "@/lib/market/types";
 
 const MAX_ILLUSTRATIVE_PICKS = 3;
 
@@ -18,7 +19,25 @@ interface ApiResponse<T> {
   error?: string;
 }
 
-export async function POST(request: Request): Promise<NextResponse<ApiResponse<PortfolioRecommendation>>> {
+async function buildSnapshot(
+  provider: MarketDataProvider,
+  tickers: readonly string[],
+): Promise<MarketSnapshot> {
+  const prices: Record<string, number> = {};
+  await Promise.all(
+    tickers.map(async (ticker) => {
+      const quote = await provider.getQuote(ticker);
+      if (quote) prices[ticker] = quote.price;
+    }),
+  );
+
+  const live = isLiveProvider();
+  const asOf = live && provider.asOf ? await provider.asOf() : null;
+
+  return { source: live ? "etoro" : "seed", asOf, prices };
+}
+
+export async function POST(request: Request): Promise<NextResponse<ApiResponse<RecommendResult>>> {
   let body: unknown;
   try {
     body = await request.json();
@@ -38,7 +57,13 @@ export async function POST(request: Request): Promise<NextResponse<ApiResponse<P
     const provider = getMarketDataProvider();
     const picks = await topPicks(provider, MAX_ILLUSTRATIVE_PICKS);
     const recommendation = recommendPortfolio(parsed.data, picks);
-    return NextResponse.json({ success: true, data: recommendation });
+
+    const tickers = recommendation.slices
+      .map((slice) => slice.ticker)
+      .filter((ticker): ticker is string => Boolean(ticker));
+    const market = await buildSnapshot(provider, tickers);
+
+    return NextResponse.json({ success: true, data: { recommendation, market } });
   } catch {
     return NextResponse.json(
       { success: false, error: "Could not build a portfolio right now. Please try again." },

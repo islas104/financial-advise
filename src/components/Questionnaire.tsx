@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { QUESTIONS, type QuizAnswers } from "@/lib/portfolio/questions";
-import type { PortfolioRecommendation } from "@/lib/portfolio/types";
+import type { RecommendResult } from "@/lib/portfolio/types";
 import { ResultView } from "./ResultView";
 
 type Status = "answering" | "loading" | "error";
@@ -11,7 +11,7 @@ export function Questionnaire() {
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Partial<QuizAnswers>>({});
   const [status, setStatus] = useState<Status>("answering");
-  const [result, setResult] = useState<PortfolioRecommendation | null>(null);
+  const [result, setResult] = useState<RecommendResult | null>(null);
 
   const question = QUESTIONS[step];
   const progress = Math.round((step / QUESTIONS.length) * 100);
@@ -28,7 +28,7 @@ export function Questionnaire() {
       if (!res.ok || !json.success) {
         throw new Error(json.error ?? "Something went wrong.");
       }
-      setResult(json.data as PortfolioRecommendation);
+      setResult(json.data as RecommendResult);
       setStatus("answering");
     } catch {
       setStatus("error");
@@ -54,7 +54,13 @@ export function Questionnaire() {
   }
 
   if (result) {
-    return <ResultView recommendation={result} onRestart={restart} />;
+    return (
+      <ResultView
+        recommendation={result.recommendation}
+        market={result.market}
+        onRestart={restart}
+      />
+    );
   }
 
   if (status === "loading") {

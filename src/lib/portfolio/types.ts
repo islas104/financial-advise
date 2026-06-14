@@ -34,3 +34,18 @@ export interface PortfolioRecommendation {
   /** Plain-language explanations the UI can render for transparency. */
   readonly rationale: readonly string[];
 }
+
+export type MarketDataSource = "etoro" | "seed";
+
+export interface MarketSnapshot {
+  readonly source: MarketDataSource;
+  /** ISO timestamp of the live data, or null for seeded reference data. */
+  readonly asOf: string | null;
+  /** Current price per ticker, keyed by symbol. */
+  readonly prices: Readonly<Record<string, number>>;
+}
+
+export interface RecommendResult {
+  readonly recommendation: PortfolioRecommendation;
+  readonly market: MarketSnapshot;
+}

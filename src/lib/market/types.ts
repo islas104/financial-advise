@@ -19,4 +19,6 @@ export interface MarketDataProvider {
   /** Curated S&P 500 large-caps available for illustrative single-stock tilts. */
   listConstituents(): Promise<readonly Constituent[]>;
   getQuote(ticker: string): Promise<Quote | null>;
+  /** Timestamp of the latest live data, when the provider serves live quotes. */
+  asOf?(): Promise<string | null>;
 }
