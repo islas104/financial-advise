@@ -8,6 +8,7 @@ import type {
   RiskBand,
 } from "@/lib/portfolio/types";
 import { AllocationBar } from "./AllocationBar";
+import { MoneySplit } from "./MoneySplit";
 
 const BAND_LABEL: Record<RiskBand, string> = {
   conservative: "Conservative",
@@ -116,6 +117,8 @@ export function ResultView({ recommendation, market, onRestart }: Props) {
           </ul>
         </div>
       ) : null}
+
+      <MoneySplit slices={slices} projection={recommendation.projection} />
     </section>
   );
 }

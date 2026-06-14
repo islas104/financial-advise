@@ -108,6 +108,24 @@ describe("recommendPortfolio", () => {
     expect(adventurous).toBeGreaterThan(cautious);
   });
 
+  it("includes a projection with horizon years and an illustrative return", () => {
+    const short = recommendPortfolio({
+      timeHorizon: "short",
+      riskComfort: "cautious",
+      goal: "preserve",
+    });
+    const long = recommendPortfolio({
+      timeHorizon: "long",
+      riskComfort: "adventurous",
+      goal: "growth",
+    });
+    expect(long.projection.years).toBeGreaterThan(short.projection.years);
+    expect(long.projection.assumedAnnualReturnPct).toBeGreaterThan(
+      short.projection.assumedAnnualReturnPct,
+    );
+    expect(short.projection.assumedAnnualReturnPct).toBeGreaterThan(0);
+  });
+
   it("keeps the risk score within 0–100", () => {
     for (const timeHorizon of HORIZONS) {
       for (const riskComfort of COMFORTS) {

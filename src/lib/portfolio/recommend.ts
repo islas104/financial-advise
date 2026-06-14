@@ -18,6 +18,18 @@ const MAX_SCORE =
 /** Illustrative core index holding (broad S&P 500 exposure). */
 const INDEX_TICKER = "VOO";
 
+/** Representative horizon length in years per answer. */
+const HORIZON_YEARS: Record<TimeHorizon, number> = { short: 2, medium: 5, long: 10 };
+
+/** Illustrative annual return assumption per risk band — NOT a forecast. */
+const ASSUMED_RETURN_BY_BAND: Record<RiskBand, number> = {
+  conservative: 3,
+  moderate: 4,
+  balanced: 5,
+  growth: 6,
+  aggressive: 7,
+};
+
 interface BandRule {
   readonly band: RiskBand;
   /** Inclusive upper bound of the normalised 0–100 score for this band. */
@@ -121,5 +133,9 @@ export function recommendPortfolio(
     riskBand: rule.band,
     slices,
     rationale: buildRationale(answers, rule),
+    projection: {
+      years: HORIZON_YEARS[answers.timeHorizon],
+      assumedAnnualReturnPct: ASSUMED_RETURN_BY_BAND[rule.band],
+    },
   };
 }

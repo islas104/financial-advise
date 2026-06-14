@@ -26,6 +26,13 @@ export interface AllocationSlice {
   readonly percent: number;
 }
 
+export interface Projection {
+  /** Representative number of years for the chosen time horizon. */
+  readonly years: number;
+  /** Illustrative (not promised) annual return used for the growth example. */
+  readonly assumedAnnualReturnPct: number;
+}
+
 export interface PortfolioRecommendation {
   /** 0–100 composite risk score derived from the answers. */
   readonly riskScore: number;
@@ -33,6 +40,8 @@ export interface PortfolioRecommendation {
   readonly slices: readonly AllocationSlice[];
   /** Plain-language explanations the UI can render for transparency. */
   readonly rationale: readonly string[];
+  /** Time dimension: horizon length + an illustrative growth assumption. */
+  readonly projection: Projection;
 }
 
 export type MarketDataSource = "etoro" | "seed";
