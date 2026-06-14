@@ -17,7 +17,9 @@ export function AllocationBar({ slices }: Props) {
       <div
         className="flex h-4 w-full overflow-hidden rounded-full"
         role="img"
-        aria-label="Portfolio allocation by holding"
+        aria-label={`Portfolio allocation: ${slices
+          .map((slice) => `${slice.label} ${slice.percent}%`)
+          .join(", ")}`}
       >
         {slices.map((slice) => (
           <div

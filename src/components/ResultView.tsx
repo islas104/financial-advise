@@ -1,4 +1,12 @@
-import type { MarketSnapshot, PortfolioRecommendation, RiskBand } from "@/lib/portfolio/types";
+"use client";
+
+import { useEffect, useRef } from "react";
+import type {
+  AllocationSlice,
+  MarketSnapshot,
+  PortfolioRecommendation,
+  RiskBand,
+} from "@/lib/portfolio/types";
 import { AllocationBar } from "./AllocationBar";
 
 const BAND_LABEL: Record<RiskBand, string> = {
@@ -20,23 +28,39 @@ function formatPrice(value: number): string {
 }
 
 function formatAsOf(iso: string): string {
-  return new Date(iso).toLocaleString("en-GB", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
 }
 
 export function ResultView({ recommendation, market, onRestart }: Props) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // Move focus to the result so the new content is announced and reachable.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   const { riskBand, riskScore, slices, rationale } = recommendation;
   const isLive = market.source === "etoro";
-  const pricedSlices = slices.filter((slice) => slice.ticker && market.prices[slice.ticker]);
+  const pricedSlices = slices.filter(
+    (slice): slice is AllocationSlice & { ticker: string } =>
+      Boolean(slice.ticker && market.prices[slice.ticker]),
+  );
+  const asOfLabel = market.asOf ? formatAsOf(market.asOf) : "";
 
   return (
-    <section aria-live="polite" className="grid gap-6 md:grid-cols-5">
+    <section className="grid gap-6 md:grid-cols-5">
       <div className="surface p-7 md:col-span-3">
         <p className="eyebrow">Your illustrative starter portfolio</p>
         <div className="mt-3 flex items-baseline gap-3">
-          <h2 className="text-3xl font-semibold tracking-tight">{BAND_LABEL[riskBand]}</h2>
+          <h2
+            ref={headingRef}
+            tabIndex={-1}
+            className="text-3xl font-semibold tracking-tight outline-none"
+          >
+            {BAND_LABEL[riskBand]}
+          </h2>
           <span className="font-mono text-sm text-muted">risk score {riskScore}/100</span>
         </div>
         <div className="mt-6">
@@ -47,8 +71,8 @@ export function ResultView({ recommendation, market, onRestart }: Props) {
       <aside className="surface flex flex-col p-7 md:col-span-2">
         <p className="eyebrow">Why this mix</p>
         <ul className="mt-3 space-y-3 text-sm leading-relaxed text-ink-soft">
-          {rationale.map((line) => (
-            <li key={line} className="flex gap-2.5">
+          {rationale.map((line, index) => (
+            <li key={index} className="flex gap-2.5">
               <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald" />
               <span>{line}</span>
             </li>
@@ -67,7 +91,7 @@ export function ResultView({ recommendation, market, onRestart }: Props) {
               {isLive ? (
                 <>
                   <span aria-hidden className="h-2 w-2 animate-pulse rounded-full bg-emerald" />
-                  Live · eToro{market.asOf ? ` · ${formatAsOf(market.asOf)}` : ""}
+                  Live · eToro{asOfLabel ? ` · ${asOfLabel}` : ""}
                 </>
               ) : (
                 "Reference data (not live)"
@@ -85,7 +109,7 @@ export function ResultView({ recommendation, market, onRestart }: Props) {
                   <span className="text-ink-soft">{slice.label}</span>
                 </span>
                 <span className="font-mono tabular-nums text-ink">
-                  {formatPrice(market.prices[slice.ticker as string])}
+                  {formatPrice(market.prices[slice.ticker])}
                 </span>
               </li>
             ))}

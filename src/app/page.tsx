@@ -88,8 +88,11 @@ export default function Home() {
         </section>
 
         {/* CTA band */}
-        <section className="mx-auto max-w-6xl px-6 py-24 text-center">
-          <h2 className="mx-auto max-w-2xl text-balance text-4xl font-semibold tracking-tight md:text-5xl">
+        <section aria-labelledby="cta-heading" className="mx-auto max-w-6xl px-6 py-24 text-center">
+          <h2
+            id="cta-heading"
+            className="mx-auto max-w-2xl text-balance text-4xl font-semibold tracking-tight md:text-5xl"
+          >
             Stop overthinking your first move.
           </h2>
           <p className="mx-auto mt-5 max-w-md text-ink-soft">
