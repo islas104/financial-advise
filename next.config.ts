@@ -15,7 +15,9 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self'",
+      // Next.js App Router injects inline hydration/streaming scripts. 'unsafe-inline'
+      // keeps the app working; upgrade to a per-request nonce CSP (via proxy.ts) later.
+      "script-src 'self' 'unsafe-inline'",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data:",
       "connect-src 'self'",
