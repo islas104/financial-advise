@@ -22,12 +22,17 @@ investing approachable. Live prices come from the eToro public API.
    `aggressive`) and a matching allocation built around a broad **S&P 500 index
    core** (VOO), with bonds, a cash buffer, and — for higher risk bands — a few
    illustrative large-cap tilts.
-3. You get a clear breakdown with plain-language reasoning and **live prices**
-   for each holding.
+3. You get a clear breakdown with plain-language reasoning, **live prices** for
+   each holding, a **£-amount split** (type an amount, see it divided across the
+   portfolio), and an illustrative **time-horizon growth projection** so you can
+   see roughly how it could grow over your chosen horizon.
 
 The recommendation engine (`src/lib/portfolio/recommend.ts`) is a set of pure,
 deterministic functions — no machine learning, no hidden state — so every output
 is explainable and testable.
+
+> The growth projection is illustrative only — **not a forecast**. Returns are
+> not guaranteed and you may get back less than you invest.
 
 ---
 
@@ -37,7 +42,9 @@ is explainable and testable.
 - **Tailwind CSS v4**
 - **Zod** for input validation at every boundary
 - Pluggable market-data layer: seeded reference data **or** live eToro REST
-- Hero visual generated with [Higgsfield](https://higgsfield.ai)
+- **Vitest** (unit) + **Playwright** (e2e), gated by **GitHub Actions** CI
+- Hero visual generated with [Higgsfield](https://higgsfield.ai), served as
+  an optimised WebP
 - Deployed on **Vercel**
 
 ---
@@ -61,6 +68,9 @@ runs end-to-end on built-in S&P 500 reference data.
 | `npm run build` | Production build (also type-checks and lints) |
 | `npm run start` | Serve the production build |
 | `npm run lint` | ESLint |
+| `npm run test` | Unit tests (Vitest) |
+| `npm run test:coverage` | Unit tests with a coverage report |
+| `npm run test:e2e` | End-to-end tests (Playwright) |
 | `npm run etoro:check` | Verify eToro credentials against the live API |
 
 ---
@@ -164,20 +174,34 @@ Errors return `{ "success": false, "error": "…" }` with `400` (bad JSON), `422
 
 ---
 
+## Testing & CI
+
+- **Unit tests** (Vitest) cover the recommendation engine and market layer —
+  ~99% line coverage of `src/lib`. Run `npm run test` or `npm run test:coverage`.
+- **End-to-end** (Playwright) drives the full landing → questionnaire → result
+  flow in a headless browser. Run `npm run test:e2e`. Target a live deployment
+  with `BASE_URL=https://financial-advise.vercel.app npm run test:e2e`.
+- **CI** (`.github/workflows/ci.yml`) runs lint → unit tests → build, plus the
+  e2e suite (on seed data, no secrets), on every push and PR to `main`.
+
+---
+
 ## Project structure
 
 ```
 src/
 ├── app/
-│   ├── page.tsx              # Landing page (hero, how-it-works, CTA)
-│   ├── start/page.tsx        # Questionnaire flow
-│   └── api/recommend/route.ts# Recommendation + live-price endpoint
-├── components/               # Questionnaire, ResultView, AllocationBar, …
+│   ├── page.tsx               # Landing page (hero, how-it-works, CTA)
+│   ├── start/page.tsx         # Questionnaire flow
+│   └── api/recommend/route.ts # Recommendation + live-price endpoint
+├── components/                # Questionnaire, ResultView, AllocationBar, MoneySplit, …
 ├── lib/
-│   ├── portfolio/            # Pure recommendation engine + question config
-│   └── market/               # Provider interface, seed data, eToro adapter
-└── proxy.ts                  # Rate limit + body-size guard for /api
-scripts/etoro-check.mjs       # Credential checker
+│   ├── portfolio/             # Pure recommendation engine + question config (+ *.test.ts)
+│   └── market/                # Provider interface, seed data, eToro adapter (+ *.test.ts)
+└── proxy.ts                   # Rate limit + body-size guard for /api
+e2e/flow.spec.ts               # Playwright end-to-end test
+scripts/etoro-check.mjs        # Credential checker
+.github/workflows/ci.yml       # Lint, test, build, e2e
 ```
 
 ---
