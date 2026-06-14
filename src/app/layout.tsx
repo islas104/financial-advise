@@ -12,10 +12,29 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = "https://financial-advise.vercel.app";
+const TITLE = "financial-advise — a simpler way to start investing";
+const DESCRIPTION =
+  "Answer three questions and get a simple, S&P 500-based starter portfolio with live prices and clear reasoning. Educational only — not financial advice.";
+
 export const metadata: Metadata = {
-  title: "financial-advise — a simpler way to start investing",
-  description:
-    "Answer a few questions and get a simple, S&P 500-based starter portfolio you can research and understand. Educational only — not financial advice.",
+  metadataBase: new URL(SITE_URL),
+  title: { default: TITLE, template: "%s · financial-advise" },
+  description: DESCRIPTION,
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    url: SITE_URL,
+    siteName: "financial-advise",
+    type: "website",
+    images: [{ url: "/hero.webp", width: 1600, height: 1195, alt: "financial-advise" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/hero.webp"],
+  },
 };
 
 export default function RootLayout({
